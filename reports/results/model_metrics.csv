@@ -1,0 +1,8 @@
+metric,value,meaning
+AUC (test set),0.754,"0.5 = coin flip, 1.0 = perfect ranking of risky vs safe customers"
+Gini (test set),0.508,2 x AUC - 1; common in bank credit scoring
+KS (test set),0.398,max separation between defaulters and non-defaulters
+AUC (5-fold CV mean),0.764,average over 5 different splits (range 0.755–0.774)
+Train customers,21000.0,70% of customers
+Test customers,9000.0,"30% held out, never seen in training"
+Default rate,0.221,share of customers who defaulted

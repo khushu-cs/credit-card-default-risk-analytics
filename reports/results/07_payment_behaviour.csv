@@ -1,0 +1,6 @@
+payment_behaviour,customers,pct_customers,default_rate_pct,balance_m,pct_of_balances,pct_of_defaulted_balances,avg_limit
+1. Pays in full,5012,16.7,12.5,41.1,2.7,1.2,231650.0
+2. Partial payer,6221,20.7,10.6,222.0,14.4,6.1,188542.0
+3. Minimum payer,8373,27.9,11.2,850.5,55.3,29.3,158021.0
+4. Behind on payments,9528,31.8,43.0,423.8,27.6,63.5,124191.0
+5. Inactive,866,2.9,36.6,0.0,0.0,0.0,212679.0

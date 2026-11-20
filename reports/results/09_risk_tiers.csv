@@ -1,0 +1,5 @@
+risk_tier,customers,pct_customers,predicted_default_pct,actual_default_pct,balance_m,pct_of_all_defaulters,pct_of_defaulted_balance
+1. Low,5262,17.5,9.2,7.3,399.5,5.8,10.3
+2. Medium,17187,57.3,13.9,14.5,810.8,37.5,31.9
+3. High,4197,14.0,36.7,36.8,164.6,23.3,23.7
+4. Very high,3354,11.2,65.9,66.2,162.4,33.5,34.1

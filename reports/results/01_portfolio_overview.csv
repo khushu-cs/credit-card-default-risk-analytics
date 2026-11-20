@@ -1,0 +1,2 @@
+customers,total_credit_lines_bn,avg_credit_limit,total_balance_bn,portfolio_utilization_pct,late_in_september_pct,default_rate_pct,balance_of_defaulters_bn,balance_at_risk_pct
+30000,5.02,167484.0,1.54,30.6,22.7,22.1,0.32,20.9

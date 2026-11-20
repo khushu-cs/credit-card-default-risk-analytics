@@ -1,0 +1,5 @@
+risk_tier,customers,avg_limit,avg_utilization_pct,late_in_sept_pct,avg_late_months,suggested_action
+1. Low,5262,356646.0,21.0,0.0,0.0,Eligible for credit-line increases and retention offers
+2. Medium,17187,137404.0,45.0,3.0,0.2,Monitor monthly; payment reminders before due date
+3. High,4197,125038.0,41.0,70.0,1.9,Freeze line increases; proactive outreach and payment plans
+4. Very high,3354,77971.0,65.0,99.0,4.3,Reduce available credit; early collections contact

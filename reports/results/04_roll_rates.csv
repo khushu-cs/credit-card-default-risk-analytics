@@ -1,0 +1,6 @@
+from_status,account_months,to_no_balance_pct,to_paid_in_full_pct,to_revolving_pct,to_1_2_late_pct,to_3plus_late_pct
+1. No balance,21656,81.3,6.8,5.0,6.9,0.0
+2. Paid in full,28954,6.6,75.7,12.0,5.7,0.0
+3. Revolving,81182,0.0,5.1,88.9,6.1,0.0
+4. 1-2 months late,16331,0.1,8.0,17.2,68.4,6.3
+5. 3+ months late,1877,0.0,5.1,5.5,36.3,53.1

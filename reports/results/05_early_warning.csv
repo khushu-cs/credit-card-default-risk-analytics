@@ -1,0 +1,17 @@
+signal,value,customers,default_rate_pct
+Late months (of last 6),0 months,19931,11.7
+Late months (of last 6),1 month,4426,29.8
+Late months (of last 6),2 months,1899,38.8
+Late months (of last 6),3 months,1154,50.9
+Late months (of last 6),4-6 months,2590,64.1
+Payment behaviour,1. Pays in full,5012,12.5
+Payment behaviour,2. Partial payer,6221,10.6
+Payment behaviour,3. Minimum payer,8373,11.2
+Payment behaviour,4. Behind on payments,9528,43.0
+Payment behaviour,5. Inactive,866,36.6
+September status,1. No balance,2759,13.2
+September status,2. Paid in full,5686,16.8
+September status,3. Revolving,14737,12.8
+September status,4. 1 month late,3688,33.9
+September status,5. 2 months late,2667,69.1
+September status,6. 3+ months late,463,71.9

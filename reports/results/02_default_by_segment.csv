@@ -1,0 +1,22 @@
+dimension,segment,customers,default_rate_pct,avg_limit
+Age,1. 21-29,9618,22.8,124209.0
+Age,2. 30-39,11238,20.3,197001.0
+Age,3. 40-49,6464,23.0,180786.0
+Age,4. 50-59,2341,24.9,163909.0
+Age,5. 60+,339,28.3,187847.0
+Credit limit (NT$),1. <=50K,7676,31.8,35205.0
+Credit limit (NT$),2. 50-100K,4822,25.8,80759.0
+Credit limit (NT$),3. 100-200K,7880,19.5,158327.0
+Credit limit (NT$),4. 200-400K,7818,15.3,286788.0
+Credit limit (NT$),5. 400K+,1804,12.0,485116.0
+Education,Graduate school,10585,19.2,212956.0
+Education,High school,4917,25.2,126550.0
+Education,Other,123,5.7,220894.0
+Education,University,14030,23.7,147062.0
+Education,Unknown,345,7.5,167206.0
+Marital status,Married,13659,23.5,182201.0
+Marital status,Other,323,26.0,98080.0
+Marital status,Single,15964,20.9,156414.0
+Marital status,Unknown,54,9.3,132963.0
+Sex,Female,18112,20.8,170086.0
+Sex,Male,11888,24.2,163520.0

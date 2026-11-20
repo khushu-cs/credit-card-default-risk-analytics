@@ -1,0 +1,8 @@
+factor,coefficient,odds_multiplier,type
+Months late in September,0.439,1.55,per 1 std. dev. increase
+Number of late months (of 6),0.335,1.4,per 1 std. dev. increase
+Worst delay in last 6 months (months),0.233,1.26,per 1 std. dev. increase
+Credit limit (log),-0.211,0.81,per 1 std. dev. increase
+No bills in 6 months (inactive),0.137,1.15,per 1 std. dev. increase
+Utilization in September,0.07,1.07,per 1 std. dev. increase
+Share of bills paid (last 5 months),0.068,1.07,per 1 std. dev. increase
