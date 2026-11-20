@@ -297,7 +297,7 @@ function renderOverview(ids) {
     ["Default rate", fmt.pct(def / Math.max(ids.length, 1)), `${fmt.pct(defBal / Math.max(bal, 1), 0)} of balances owed by defaulters`],
   ]);
   const m = cubeRows("monthly"), by = Array.from({length: 6}, () => ({bal: 0, lim: 0}));
-  for (const r of m) { by[r.m].bal += r.bal; by[r.m].lim += r.lim; }
+  for (const r of m) { by[r.mo].bal += r.bal; by[r.mo].lim += r.lim; }
   plot("c-trend", [
     {type: "bar", x: dims.months, y: by.map(b => b.bal), marker: {color: C.blueL}, name: "Balances", yaxis: "y",
      text: by.map(b => fmt.nt(b.bal)), textposition: "outside", cliponaxis: false, hovertemplate: "%{x}: %{y:,.0f} NT$ owed<extra></extra>"},
@@ -372,7 +372,7 @@ function renderWarning(ids) {
     colorbar: {tickformat: ".0%", thickness: 10}}],
     {yaxis: {autorange: "reversed", title: {text: "This month", font: {size: 11, color: C.ink2}}}, xaxis: {tickangle: -25, title: {text: "Next month", font: {size: 11, color: C.ink2}}}, margin: {l: 120, b: 80}});
   const m = cubeRows("monthly"), by = Array.from({length: 6}, () => ({n: 0, late2: 0}));
-  for (const r of m) { by[r.m].n += r.n; by[r.m].late2 += r.late2; }
+  for (const r of m) { by[r.mo].n += r.n; by[r.mo].late2 += r.late2; }
   plot("c-late2", [{type: "scatter", mode: "lines+markers+text", x: dims.months, y: by.map(b => b.late2 / Math.max(b.n, 1)),
     line: {color: C.orange, width: 2}, marker: {size: 8}, text: by.map(b => fmt.pct(b.late2 / Math.max(b.n, 1))), textposition: "top center",
     hovertemplate: "%{x}: %{y:.1%} of accounts 2+ months late<extra></extra>"}], {yaxis: {tickformat: ".0%", rangemode: "tozero"}, margin: {t: 20}});

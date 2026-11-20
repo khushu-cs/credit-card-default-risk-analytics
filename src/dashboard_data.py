@@ -36,7 +36,7 @@ def build() -> dict:
         FROM customers c JOIN customer_features f USING (customer_id) JOIN risk_scores r USING (customer_id)
         ORDER BY c.customer_id""").df()
     monthly = con.sql(f"""
-        SELECT {idx("strftime(s.month, '%Y-%m-%d')", MONTHS)} AS m, {DIMS},
+        SELECT {idx("strftime(s.month, '%Y-%m-%d')", MONTHS)} AS mo, {DIMS},
                COUNT(*) AS n, SUM(GREATEST(s.bill_amount, 0))::BIGINT AS bal, SUM(s.credit_limit)::BIGINT AS lim,
                SUM(s.payment_amount)::BIGINT AS paid, SUM((s.repayment_status = -1)::INT) AS full,
                SUM((s.repayment_status = 0)::INT) AS rev, SUM((s.repayment_status >= 2)::INT) AS late2
