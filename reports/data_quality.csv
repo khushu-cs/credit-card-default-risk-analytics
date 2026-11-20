@@ -1,0 +1,13 @@
+issue,rows_affected,action
+Raw file has a second header row (X1..X23 labels),1,Skipped; used the descriptive header row
+"Repayment status columns named PAY_0, PAY_2..PAY_6 (no PAY_1)",6,Renamed PAY_0 to PAY_1 so all six months line up
+Duplicate customer IDs,0,None found; no action
+Missing values (any column),0,None found; no action
+"EDUCATION codes 0, 5, 6 are not documented",345,Grouped as 'Unknown'
+MARRIAGE code 0 is not documented,54,Grouped as 'Unknown'
+Negative bill amounts (customer overpaid = credit balance),3932,Kept; flagged has_credit_balance = 1; utilization floored at 0
+Status -2 ('no balance') while the bill is above zero,9425,Kept as reported; noted as a source inconsistency
+Bill above credit limit (over-limit),8274,Kept; flagged is_over_limit = 1
+"Status 1 ('1 month late') appears 3,688 times in September but only 34 times in Apr–Aug",3722,"Month-to-month trends use 2+ months late (status >= 2), which is recorded consistently"
+Customers with a zero bill in all six months (inactive),866,Kept; excluded from utilization averages
+Undocumented status codes -2 and 0,120334,"Interpreted as -2 = no balance, 0 = revolving (paid minimum, not late)"
