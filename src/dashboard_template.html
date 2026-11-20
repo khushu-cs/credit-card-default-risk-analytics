@@ -3,224 +3,318 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Credit Card Default Risk Analytics | Khushi Patel</title>
+<title>Credit Card Default Risk Review | Khushi Patel</title>
+<meta name="description" content="Credit risk review of 30,000 real credit card customers: who defaults, early warning signs, and a behaviour-based risk score.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-__PLOTLY_VERSION__.min.js" charset="utf-8"></script>
 <style>
-  :root { --surface:#fcfcfb; --card:#fff; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8984; --line:#e4e3df;
-          --blue:#2a78d6; --blue-xl:#e8f1fc; --orange:#eb6834; --aqua:#1baf7a; }
+  :root {
+    --bg: #eef1f5; --panel: #ffffff; --ink: #14233b; --ink2: #4b5a6e; --ink3: #7f8ba0; --rule: #d9dfe7; --rule2: #e9edf2;
+    --blue: #2f6fdb; --blue-l: #b3cbf3;
+    --r1: #2e8b6e; --r2: #d9a441; --r3: #d9772e; --r4: #b8372b;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --sans: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--surface); color:var(--ink); font-family:Inter,"Segoe UI",Helvetica,Arial,sans-serif; }
-  .wrap { max-width:1240px; margin:0 auto; padding:0 20px 60px; }
-  header { padding:26px 0 8px; display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; }
-  h1 { font-size:26px; margin:0 0 4px; letter-spacing:-.01em; }
-  .lead { color:var(--ink2); margin:0; font-size:14.5px; max-width:800px; line-height:1.45; }
-  .badge { display:inline-block; font-size:11.5px; font-weight:600; color:#0b7a3e; background:#e6f5ec; border:1px solid #bfe5cd;
-           padding:2px 8px; border-radius:20px; margin-right:6px; vertical-align:middle; }
-  .by { font-size:13px; color:var(--ink2); text-align:right; } .by a { color:var(--blue); text-decoration:none; }
-  .filters { position:sticky; top:0; z-index:20; background:var(--surface); padding:12px 0; border-bottom:1px solid var(--line);
-             display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
-  .filters label { display:flex; flex-direction:column; font-size:11.5px; color:var(--ink2); gap:4px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-  .filters select { font:inherit; font-size:14px; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:#fff;
-                    min-width:150px; color:var(--ink); text-transform:none; letter-spacing:0; font-weight:400; }
-  .btn { font:inherit; font-size:13.5px; padding:8px 14px; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; color:var(--ink); }
-  .btn:hover { border-color:var(--ink3); }
-  .active-filters { font-size:12.5px; color:var(--ink2); margin-left:auto; align-self:center; }
-  nav.tabs { display:flex; gap:4px; margin:16px 0 14px; border-bottom:1px solid var(--line); overflow-x:auto; }
-  nav.tabs button { font:inherit; font-size:14.5px; background:none; border:none; padding:10px 16px; cursor:pointer; color:var(--ink2);
-                    border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; }
-  nav.tabs button.on { color:var(--ink); border-bottom-color:var(--blue); font-weight:600; }
-  .tab { display:none; } .tab.on { display:block; }
-  .question { font-size:15px; color:var(--ink2); margin:0 0 14px; } .question b { color:var(--ink); }
-  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
-  .kpi { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
-  .kpi .l { font-size:12.5px; color:var(--ink2); } .kpi .v { font-size:27px; font-weight:700; margin:4px 0 2px; font-variant-numeric:tabular-nums; }
-  .kpi .s { font-size:12.5px; color:var(--ink2); }
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 14px 8px; min-width:0; }
-  .card.full { grid-column:1 / -1; }
-  .card h3 { font-size:15px; margin:0 0 2px; } .card .sub { font-size:12.5px; color:var(--ink2); margin:0 0 4px; }
-  .card .note { font-size:11.5px; color:var(--ink3); margin:2px 0 4px; }
-  .chart { width:100%; height:330px; } .chart.tall { height:380px; }
-  .reco { background:var(--blue-xl); border:1px solid #cde2fb; border-radius:10px; padding:14px 18px; margin-top:14px; }
-  .reco h3 { margin:0 0 6px; font-size:15px; } .reco ol { margin:0; padding-left:20px; } .reco li { margin:5px 0; font-size:14px; line-height:1.45; }
-  .sim { display:grid; grid-template-columns:1fr 1.2fr; gap:18px; align-items:start; }
-  .slider-box { background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:14px; }
-  .slider-box input[type=range] { width:100%; accent-color:var(--blue); }
-  .slider-val { font-size:30px; font-weight:700; }
-  .res { display:grid; grid-template-columns:1fr 1fr; gap:10px; } .res .kpi .v { font-size:24px; }
-  .bar { height:10px; background:var(--line); border-radius:5px; overflow:hidden; margin-top:6px; } .bar>span { display:block; height:100%; }
-  .verdict { margin-top:10px; font-size:14px; line-height:1.5; background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
-  table.tbl { border-collapse:collapse; width:100%; font-size:13.5px; font-variant-numeric:tabular-nums; }
-  .tbl th,.tbl td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
-  .tbl th { font-size:12px; color:var(--ink2); font-weight:600; } .tbl td.n { text-align:right; white-space:nowrap; }
-  .prose { font-size:14px; line-height:1.6; color:var(--ink); } .prose p { margin:0 0 10px; }
-  footer { margin-top:30px; font-size:12.5px; color:var(--ink2); line-height:1.6; border-top:1px solid var(--line); padding-top:14px; }
-  footer a, .prose a { color:var(--blue); }
-  @media (max-width:900px) { .kpis { grid-template-columns:1fr 1fr; } .grid,.sim { grid-template-columns:1fr; } }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  a { color: var(--blue); }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 3px; }
+
+  /* ---------- shell: chapter rail + content ---------- */
+  .shell { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+  .rail { background: var(--ink); color: #dfe6ef; padding: 28px 22px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+  .rail h1 { font-family: var(--serif); font-weight: 600; font-size: 23px; line-height: 1.2; margin: 0 0 6px; color: #fff; letter-spacing: -0.005em; }
+  .rail .real { display: inline-block; font-size: 12px; color: #bfe6d6; border: 1px solid #3f7f6a; border-radius: 4px; padding: 1px 7px; margin: 6px 0 22px; }
+  .chapters { list-style: none; margin: 0; padding: 0; counter-reset: ch; }
+  .chapters button { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 26px 1fr; width: 100%; padding: 10px 10px; border-radius: 6px;
+                     cursor: pointer; color: #b8c4d4; font-size: 14.5px; }
+  .chapters button .n { font-variant-numeric: tabular-nums; color: #6f819a; }
+  .chapters button:hover { background: #1d3150; color: #fff; }
+  .chapters button[aria-selected="true"] { background: #ffffff; color: var(--ink); font-weight: 600; }
+  .chapters button[aria-selected="true"] .n { color: var(--ink3); }
+  .chapters button:focus-visible { outline: 2px solid #9fc0ff; }
+  .rail .by { margin-top: auto; font-size: 13px; color: #9aa8bb; line-height: 1.55; }
+  .rail .by b { color: #fff; font-weight: 600; }
+  .rail .by a { color: #cfe0ff; }
+
+  .content { padding: 26px 36px 60px; min-width: 0; }
+  .wrap { max-width: 1180px; }
+
+  /* filters */
+  .filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; padding-bottom: 18px; border-bottom: 1px solid var(--rule); }
+  .filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--ink2); }
+  .filters select { font: inherit; font-size: 14px; color: var(--ink); padding: 7px 30px 7px 10px; border: 1px solid var(--rule); border-radius: 6px;
+                    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237f8ba0'/%3E%3C/svg%3E") no-repeat right 10px center;
+                    appearance: none; min-width: 148px; }
+  .reset { font: inherit; font-size: 13.5px; border: none; background: none; color: var(--blue); cursor: pointer; padding: 8px 4px; }
+  .reset:disabled { color: var(--ink3); cursor: default; }
+  .scope { margin-left: auto; font-size: 13px; color: var(--ink2); align-self: center; }
+
+  /* chapter header: the finding, written as a sentence */
+  .chapter { display: none; } .chapter.on { display: block; }
+  .finding { padding: 26px 0 20px; max-width: 900px; }
+  .finding .q { font-size: 14px; color: var(--ink2); margin: 0 0 8px; }
+  .finding h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36px); line-height: 1.18; margin: 0; letter-spacing: -0.01em; }
+  .finding h2 strong { font-weight: 600; }
+
+  /* KPI ledger: one strip, divided by rules */
+  .ledger { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; margin-bottom: 18px; }
+  .ledger > div { padding: 14px 18px; border-left: 1px solid var(--rule2); }
+  .ledger > div:first-child { border-left: none; }
+  .ledger .l { font-size: 13px; color: var(--ink2); }
+  .ledger .v { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; margin: 2px 0 0; letter-spacing: -0.01em; }
+  .ledger .s { font-size: 12.5px; color: var(--ink3); }
+
+  /* hero: the risk ladder */
+  .ladder { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px 14px; margin-bottom: 18px; }
+  .ladder h3 { font-size: 15px; margin: 0 0 2px; font-weight: 600; }
+  .ladder .sub { font-size: 13px; color: var(--ink2); margin: 0 0 14px; }
+  .lrow { display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: center; margin: 8px 0; }
+  .lrow .lab { font-size: 13.5px; color: var(--ink2); text-align: right; }
+  .bar { display: flex; height: 40px; border-radius: 5px; overflow: hidden; background: var(--rule2); }
+  .seg { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+         width: 0; transition: width 900ms cubic-bezier(.2,.7,.2,1); white-space: nowrap; overflow: hidden; border-right: 2px solid #fff; }
+  .seg:last-child { border-right: none; }
+  .seg.t1 { background: var(--r1); } .seg.t2 { background: var(--r2); color: #3b2a05; } .seg.t3 { background: var(--r3); } .seg.t4 { background: var(--r4); }
+  .key { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 0 0 164px; font-size: 12.5px; color: var(--ink2); }
+  .key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+  /* panels */
+  .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; }
+  .panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 16px 8px; min-width: 0; }
+  .span-12 { grid-column: span 12; } .span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; } .span-6 { grid-column: span 6; }
+  .panel h3 { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+  .panel .sub { font-size: 13px; color: var(--ink2); margin: 0 0 4px; }
+  .panel .note { font-size: 12px; color: var(--ink3); margin: 0 0 4px; }
+  .chart { width: 100%; height: 320px; } .chart.tall { height: 380px; } .chart.short { height: 260px; }
+
+  /* recommendations: written like a memo, set apart by a rule, not a coloured box */
+  .reco { margin-top: 22px; padding: 18px 0 0; border-top: 2px solid var(--ink); display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
+  .reco h3 { font-family: var(--serif); font-weight: 600; font-size: 19px; margin: 0; }
+  .reco ol { margin: 0; padding-left: 20px; max-width: 760px; }
+  .reco li { margin: 0 0 10px; font-size: 15px; line-height: 1.55; }
+  .reco li::marker { color: var(--ink3); font-variant-numeric: tabular-nums; }
+
+  /* simulator */
+  .sim { display: grid; grid-template-columns: 1fr 1.25fr; gap: 22px; align-items: start; padding: 6px 0 10px; }
+  .dial { border: 1px solid var(--rule); border-radius: 8px; padding: 16px; background: #f7f9fb; }
+  .dial .t { font-size: 13.5px; color: var(--ink2); }
+  .dial .big { font-size: 40px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; margin: 4px 0 8px; }
+  input[type=range] { width: 100%; accent-color: var(--ink); }
+  .ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink3); }
+  .presets { margin-top: 12px; font-size: 13px; color: var(--ink2); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .chip { font: inherit; font-size: 13px; border: 1px solid var(--rule); background: #fff; border-radius: 20px; padding: 3px 12px; cursor: pointer; color: var(--ink); }
+  .chip:hover { border-color: var(--ink3); }
+  .outcomes { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+  .outcomes > div { padding: 12px 16px; border-bottom: 1px solid var(--rule2); border-left: 1px solid var(--rule2); }
+  .outcomes > div:nth-child(odd) { border-left: none; }
+  .outcomes > div:nth-last-child(-n+2) { border-bottom: none; }
+  .outcomes .l { font-size: 13px; color: var(--ink2); } .outcomes .v { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .meter { height: 6px; border-radius: 3px; background: var(--rule2); margin-top: 6px; overflow: hidden; } .meter span { display: block; height: 100%; }
+  .verdict { margin-top: 12px; font-size: 14.5px; line-height: 1.55; }
+
+  /* tables */
+  table.tbl { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .tbl th, .tbl td { padding: 9px 10px; border-bottom: 1px solid var(--rule2); text-align: left; vertical-align: top; }
+  .tbl th { font-size: 12.5px; color: var(--ink2); font-weight: 500; border-bottom-color: var(--rule); }
+  .tbl td.n, .tbl th.n { text-align: right; white-space: nowrap; }
+  .tier { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; } .tier i { width: 10px; height: 10px; border-radius: 2px; }
+  .prose { font-size: 14.5px; line-height: 1.6; max-width: 68ch; } .prose p { margin: 0 0 10px; }
+
+  footer { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink2); max-width: 900px; }
+
+  @media (max-width: 1000px) {
+    .shell { grid-template-columns: minmax(0, 1fr); }
+    .filters label { flex: 1 1 140px; } .filters select { width: 100%; min-width: 0; }
+    .ledger .v { font-size: 22px; }
+    .rail { position: static; height: auto; padding: 18px 18px 10px; }
+    .rail .real { margin-bottom: 12px; }
+    .chapters { display: flex; gap: 4px; overflow-x: auto; }
+    .chapters button { grid-template-columns: auto auto; gap: 6px; white-space: nowrap; padding: 8px 12px; }
+    .rail .by { display: none; }
+    .content { padding: 18px 16px 40px; }
+    .ledger { grid-template-columns: 1fr 1fr; } .ledger > div:nth-child(3) { border-left: none; } .ledger > div:nth-child(n+3) { border-top: 1px solid var(--rule2); }
+    .grid > .panel { grid-column: span 12; }
+    .sim, .reco { grid-template-columns: 1fr; }
+    .lrow { grid-template-columns: 1fr; gap: 4px; } .lrow .lab { text-align: left; } .key { margin-left: 0; }
+    .scope { margin-left: 0; width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .seg { transition: none; } }
 </style>
 </head>
 <body>
-<div class="wrap">
-<header>
-  <div>
-    <h1>Credit Card Default Risk Analytics</h1>
-    <p class="lead"><span class="badge">REAL DATA</span>30,000 real credit card customers of a Taiwanese bank, with 6 months of bills, payments and
-      repayment history (Apr–Sep 2005). Who defaults, what warns us early, and how a bank could act on it.</p>
-  </div>
-  <div class="by">Built by <b>Khushi Patel</b><br>
-    <a href="https://github.com/khushu-cs/credit-card-default-risk-analytics">Code &amp; SQL on GitHub</a> ·
+<div class="shell">
+<aside class="rail">
+  <h1>Credit card default risk review</h1>
+  <span class="real">Real data · 30,000 customers</span>
+  <nav aria-label="Chapters">
+    <ul class="chapters" role="tablist">
+      <li><button role="tab" aria-selected="true" data-tab="overview"><span class="n">1</span>Portfolio</button></li>
+      <li><button role="tab" aria-selected="false" data-tab="who"><span class="n">2</span>Who defaults</button></li>
+      <li><button role="tab" aria-selected="false" data-tab="warning"><span class="n">3</span>Warning signs</button></li>
+      <li><button role="tab" aria-selected="false" data-tab="model"><span class="n">4</span>Risk score</button></li>
+      <li><button role="tab" aria-selected="false" data-tab="quality"><span class="n">5</span>Data and cleaning</button></li>
+    </ul>
+  </nav>
+  <div class="by">Analysis by <b>Khushi Patel</b><br>
+    <a href="https://github.com/khushu-cs/credit-card-default-risk-analytics">Code and SQL on GitHub</a><br>
     <a href="https://www.linkedin.com/in/khushi-patel-458190285">LinkedIn</a></div>
-</header>
+</aside>
 
-<div class="filters" role="group" aria-label="Filters">
-  <label>Credit limit (NT$)<select id="f-L"></select></label>
-  <label>Age<select id="f-A"></select></label>
-  <label>Education<select id="f-E"></select></label>
-  <label>Marital status<select id="f-M"></select></label>
-  <button class="btn" id="reset">Reset filters</button>
-  <span class="active-filters" id="active-filters"></span>
-</div>
-
-<nav class="tabs" role="tablist">
-  <button class="on" data-tab="overview">Overview</button>
-  <button data-tab="who">Who Defaults</button>
-  <button data-tab="warning">Early Warning</button>
-  <button data-tab="model">Risk Score</button>
-  <button data-tab="quality">Data &amp; Cleaning</button>
-</nav>
-
-<!-- OVERVIEW -->
-<section class="tab on" id="tab-overview">
-  <p class="question"><b>Question:</b> What does this card portfolio look like, and how much of it is at risk?</p>
-  <div class="kpis" id="k-overview"></div>
-  <div class="grid">
-    <div class="card full"><h3>Balances and utilization, April–September 2005</h3>
-      <p class="sub">Bars = total balances owed. Figure inside each bar = utilization (balance ÷ credit limit).</p><div class="chart" id="c-trend"></div></div>
-    <div class="card"><h3>Default rate by credit limit</h3><p class="sub">Share of customers who defaulted the following month (October 2005)</p><div class="chart" id="c-limit"></div></div>
-    <div class="card"><h3>How customers pay, and where defaulted money sits</h3><p class="sub">Segments built from 6 months of bills and payments</p><div class="chart" id="c-beh"></div></div>
+<main class="content"><div class="wrap">
+  <div class="filters" role="group" aria-label="Filter customers">
+    <label>Credit limit (NT$)<select id="f-L"></select></label>
+    <label>Age<select id="f-A"></select></label>
+    <label>Education<select id="f-E"></select></label>
+    <label>Marital status<select id="f-M"></select></label>
+    <button class="reset" id="reset" disabled>Clear filters</button>
+    <span class="scope" id="active-filters" aria-live="polite"></span>
   </div>
-  <div class="reco"><h3>💡 What I'd recommend</h3><ol>
-    <li><b>Watch balance growth.</b> Balances grew 32% in six months while credit lines stayed the same, so utilization climbed from 23% to 31%. That's a portfolio taking on more risk.</li>
-    <li><b>Focus collections on customers already behind.</b> They're 32% of customers but hold nearly two-thirds of the money that ended up in default.</li>
-  </ol></div>
-</section>
 
-<!-- WHO DEFAULTS -->
-<section class="tab" id="tab-who">
-  <p class="question"><b>Question:</b> Which customers default most, and does it depend on who they are or how they use credit?</p>
-  <div class="kpis" id="k-who"></div>
-  <div class="grid">
-    <div class="card"><h3>Default rate by age</h3><div class="chart" id="c-age"></div></div>
-    <div class="card"><h3>Default rate by education</h3><p class="note">Small groups ('Other', 'Unknown') shown for completeness; treat with caution.</p><div class="chart" id="c-edu"></div></div>
-    <div class="card full"><h3>Default rate by credit limit and utilization</h3>
-      <p class="sub">Darker = higher default rate. Hover to see how many customers are in each cell.</p><div class="chart" id="c-heat"></div></div>
-  </div>
-  <div class="reco"><h3>💡 What I'd recommend</h3><ol>
-    <li><b>Size of credit line is the clearest profile signal.</b> Customers with lines of NT$50K or less default about 32% of the time, compared with 12% above NT$400K.</li>
-    <li><b>For large credit lines, watch utilization.</b> Customers with lines of NT$200K+ who use 90%+ of them default about 25% of the time, compared with about 14% for those using under 30%.</li>
-    <li><b>Don't build decisions on demographics.</b> Age, education and marital status differences are small, and fair-lending rules restrict using them.</li>
-  </ol></div>
-</section>
+  <!-- 1. PORTFOLIO -->
+  <section class="chapter on" id="tab-overview" role="tabpanel">
+    <div class="finding"><p class="q">What does the portfolio look like, and how much of it is at risk?</p><h2 id="h-overview"></h2></div>
+    <div class="ledger" id="k-overview"></div>
+    <div class="ladder">
+      <h3>The risk ladder</h3>
+      <p class="sub">Customers grouped by their risk score. A small, high-risk slice holds most of the people who defaulted.</p>
+      <div class="lrow"><div class="lab">Share of customers</div><div class="bar" id="lad-cust"></div></div>
+      <div class="lrow"><div class="lab">Share of defaulters</div><div class="bar" id="lad-def"></div></div>
+      <div class="key" id="lad-key"></div>
+    </div>
+    <div class="grid">
+      <div class="panel span-7"><h3>Balances owed, April–September 2005</h3>
+        <p class="sub">Figure inside each bar is utilization: balance divided by credit limit.</p><div class="chart" id="c-trend"></div></div>
+      <div class="panel span-5"><h3>Default rate by credit limit</h3>
+        <p class="sub">Share who defaulted in October 2005</p><div class="chart" id="c-limit"></div></div>
+      <div class="panel span-12"><h3>How customers pay, and where the defaulted money sits</h3>
+        <p class="sub">Segments built from six months of bills and payments</p><div class="chart short" id="c-beh"></div></div>
+    </div>
+    <div class="reco"><h3>What I'd recommend</h3><ol>
+      <li><b>Treat rising utilization as an early warning.</b> Balances grew 32% in six months while credit lines stayed the same, so utilization climbed from 23% to 31%.</li>
+      <li><b>Start collections with customers already behind.</b> They're a third of customers but hold nearly two-thirds of the money that went into default.</li>
+    </ol></div>
+  </section>
 
-<!-- EARLY WARNING -->
-<section class="tab" id="tab-warning">
-  <p class="question"><b>Question:</b> What behaviour warns us before a customer defaults?</p>
-  <div class="kpis" id="k-warning"></div>
-  <div class="grid">
-    <div class="card"><h3>Default rate by repayment status in September</h3><div class="chart" id="c-status"></div></div>
-    <div class="card"><h3>Default rate by number of late months (of last 6)</h3><div class="chart" id="c-late"></div></div>
-    <div class="card"><h3>Roll rates: where accounts move next month</h3>
-      <p class="sub">Each row = status this month; each cell = share of those accounts in each status next month</p><div class="chart tall" id="c-roll"></div></div>
-    <div class="card"><h3>Share of accounts 2+ months late, by month</h3>
-      <p class="note">September's drop is likely a recording change (more "1 month late" codes that month), not a real improvement. See Data &amp; Cleaning.</p>
-      <div class="chart tall" id="c-late2"></div></div>
-  </div>
-  <div class="reco"><h3>💡 What I'd recommend</h3><ol>
-    <li><b>Act on the first missed payment.</b> One month late raises default risk from about 13% to 34%; two months late raises it to 69%.</li>
-    <li><b>Track repeat lateness.</b> Customers late in 4 or more of the last 6 months default 64% of the time. They're the priority for hardship plans or credit-line reductions.</li>
-  </ol></div>
-</section>
+  <!-- 2. WHO DEFAULTS -->
+  <section class="chapter" id="tab-who" role="tabpanel">
+    <div class="finding"><p class="q">Does default depend on who customers are, or on how they use credit?</p><h2 id="h-who"></h2></div>
+    <div class="ledger" id="k-who"></div>
+    <div class="grid">
+      <div class="panel span-12"><h3>Default rate by credit limit and utilization</h3>
+        <p class="sub">Darker means more customers defaulted. Cells with fewer than 20 customers are left blank.</p><div class="chart tall" id="c-heat"></div></div>
+      <div class="panel span-6"><h3>Default rate by age</h3><div class="chart short" id="c-age"></div></div>
+      <div class="panel span-6"><h3>Default rate by education</h3>
+        <p class="note">'Other' and 'Unknown' are small groups; treat them with caution.</p><div class="chart short" id="c-edu"></div></div>
+    </div>
+    <div class="reco"><h3>What I'd recommend</h3><ol>
+      <li><b>Use credit-line size as the main profile signal.</b> Customers with lines of NT$50K or less default about 32% of the time, compared with 12% above NT$400K.</li>
+      <li><b>For large credit lines, watch utilization.</b> Customers with NT$200K+ lines who use 90%+ of them default about 25% of the time, compared with about 14% for those using under 30%.</li>
+      <li><b>Keep demographics out of decisions.</b> Age, education and marital status differences are small, and fair-lending rules restrict using them.</li>
+    </ol></div>
+  </section>
 
-<!-- RISK MODEL -->
-<section class="tab" id="tab-model">
-  <p class="question"><b>Question:</b> Can we score every customer's risk, and how should the bank act on it?</p>
-  <div class="kpis" id="k-model"></div>
-  <div class="grid">
-    <div class="card"><h3>Gains chart</h3><p class="sub">Review customers riskiest-first: what share of defaulters do you find?</p>
-      <p class="note">Test-set customers only (30% held out from training).</p><div class="chart" id="c-gains"></div></div>
-    <div class="card"><h3>What drives the score</h3><p class="sub">Change in odds of default for a 1-standard-deviation increase</p>
-      <p class="note">Behaviour only: demographics are deliberately excluded.</p><div class="chart" id="c-factors"></div></div>
-    <div class="card full"><h3>🎯 Risk cutoff simulator</h3>
-      <p class="sub">Choose a cutoff: customers whose predicted chance of default is above it get flagged for action (e.g. no credit-line increase, early outreach).</p>
-      <p class="note">Measured on test-set customers in the current filter.</p>
-      <div class="sim">
-        <div class="slider-box">
-          <div style="font-size:13px;color:var(--ink2)">Flag customers with predicted default chance of at least</div>
-          <div class="slider-val" id="cut-val"></div>
-          <input type="range" id="cut" min="5" max="80" step="1" value="30" aria-label="Risk cutoff">
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink3)"><span>5% (flag many)</span><span>80% (flag few)</span></div>
-          <div style="margin-top:12px;font-size:13px;color:var(--ink2)">Try: <button class="btn" data-cut="25" style="font-size:12px;padding:3px 8px">25%</button>
-            <button class="btn" data-cut="40" style="font-size:12px;padding:3px 8px">40%</button>
-            <button class="btn" data-cut="60" style="font-size:12px;padding:3px 8px">60%</button></div>
-        </div>
-        <div>
-          <div class="res">
-            <div class="kpi"><div class="l">Customers flagged</div><div class="v" id="r-flag"></div><div class="s" id="r-flag-s"></div></div>
-            <div class="kpi"><div class="l">Defaulters caught</div><div class="v" id="r-caught"></div><div class="bar"><span id="r-caught-bar" style="background:var(--aqua)"></span></div></div>
-            <div class="kpi"><div class="l">Good customers wrongly flagged</div><div class="v" id="r-false"></div><div class="bar"><span id="r-false-bar" style="background:var(--orange)"></span></div></div>
-            <div class="kpi"><div class="l">Of flagged, actually defaulted</div><div class="v" id="r-prec"></div><div class="s">precision</div></div>
+  <!-- 3. WARNING SIGNS -->
+  <section class="chapter" id="tab-warning" role="tabpanel">
+    <div class="finding"><p class="q">What behaviour shows up before a customer defaults?</p><h2 id="h-warning"></h2></div>
+    <div class="ledger" id="k-warning"></div>
+    <div class="grid">
+      <div class="panel span-6"><h3>Default rate by repayment status in September</h3><div class="chart" id="c-status"></div></div>
+      <div class="panel span-6"><h3>Default rate by number of late months, of the last six</h3><div class="chart" id="c-late"></div></div>
+      <div class="panel span-7"><h3>Roll rates: where accounts move the next month</h3>
+        <p class="sub">Each row is this month's status; each cell is the share of those accounts in each status next month.</p><div class="chart tall" id="c-roll"></div></div>
+      <div class="panel span-5"><h3>Accounts two or more months late</h3>
+        <p class="note">September's drop is likely a recording change, not a real improvement. See chapter 5.</p><div class="chart tall" id="c-late2"></div></div>
+    </div>
+    <div class="reco"><h3>What I'd recommend</h3><ol>
+      <li><b>Act on the first missed payment.</b> One month late raises default risk from about 13% to 34%; two months late raises it to 69%.</li>
+      <li><b>Prioritise repeat lateness.</b> Customers late in four or more of the last six months default 64% of the time. They're the first candidates for hardship plans or credit-line reductions.</li>
+    </ol></div>
+  </section>
+
+  <!-- 4. RISK SCORE -->
+  <section class="chapter" id="tab-model" role="tabpanel">
+    <div class="finding"><p class="q">Can we score every customer's risk, and how should the bank act on it?</p><h2 id="h-model"></h2></div>
+    <div class="ledger" id="k-model"></div>
+    <div class="grid">
+      <div class="panel span-12"><h3>Choose a risk cutoff</h3>
+        <p class="sub">Customers whose predicted chance of default is at or above the cutoff get flagged for action, such as no credit-line increase or an early call.</p>
+        <p class="note">Measured on test customers the model never saw in training, within the current filters.</p>
+        <div class="sim">
+          <div class="dial">
+            <div class="t">Flag customers with a predicted default chance of at least</div>
+            <div class="big" id="cut-val"></div>
+            <input type="range" id="cut" min="5" max="80" step="1" value="30" aria-label="Risk cutoff, in percent">
+            <div class="ends"><span>5%: flag many</span><span>80%: flag few</span></div>
+            <div class="presets">Try <button class="chip" data-cut="25">25%</button><button class="chip" data-cut="40">40%</button><button class="chip" data-cut="60">60%</button></div>
           </div>
-          <div class="verdict" id="r-verdict"></div>
+          <div>
+            <div class="outcomes">
+              <div><div class="l">Customers flagged</div><div class="v" id="r-flag"></div><div class="l" id="r-flag-s" style="font-size:12px;color:var(--ink3)"></div></div>
+              <div><div class="l">Defaulters caught</div><div class="v" id="r-caught"></div><div class="meter"><span id="r-caught-bar" style="background:var(--r1)"></span></div></div>
+              <div><div class="l">Good customers wrongly flagged</div><div class="v" id="r-false"></div><div class="meter"><span id="r-false-bar" style="background:var(--r4)"></span></div></div>
+              <div><div class="l">Flagged customers who defaulted</div><div class="v" id="r-prec"></div></div>
+            </div>
+            <p class="verdict" id="r-verdict"></p>
+          </div>
         </div>
       </div>
+      <div class="panel span-6"><h3>Gains: review customers riskiest first</h3>
+        <p class="sub">What share of all defaulters you find after reviewing a share of customers</p><div class="chart" id="c-gains"></div></div>
+      <div class="panel span-6"><h3>What drives the score</h3>
+        <p class="sub">Change in the odds of default for a one-standard-deviation increase. Behaviour only; no demographics.</p><div class="chart" id="c-factors"></div></div>
+      <div class="panel span-12"><h3>Risk tiers and suggested actions</h3><div id="t-tiers" style="overflow-x:auto"></div></div>
     </div>
-    <div class="card full"><h3>Risk tiers and suggested actions</h3><div id="t-tiers" style="overflow-x:auto"></div></div>
-  </div>
-  <div class="reco"><h3>💡 What I'd recommend</h3><ol>
-    <li><b>Use the score to target effort.</b> The riskiest 20% of customers include about half of all defaulters, so outreach there is roughly 2.5× more efficient than random.</li>
-    <li><b>Reward the Low tier.</b> About 17% of customers have under a 10% predicted default chance. They're safe candidates for credit-line increases and retention offers.</li>
-  </ol></div>
-</section>
+    <div class="reco"><h3>What I'd recommend</h3><ol>
+      <li><b>Point collections at the top of the ladder.</b> The riskiest 20% of customers include about half of all defaulters, so effort there is about 2.5 times as efficient as random outreach.</li>
+      <li><b>Reward the Low tier.</b> About 17% of customers have under a 10% predicted chance of default. They're safe candidates for credit-line increases and retention offers.</li>
+    </ol></div>
+  </section>
 
-<!-- DATA QUALITY -->
-<section class="tab" id="tab-quality">
-  <p class="question"><b>Question:</b> Can we trust this data, and what had to be fixed?</p>
-  <div class="grid">
-    <div class="card full"><h3>Issues found in the raw data, and what I did</h3><div id="t-quality" style="overflow-x:auto"></div></div>
-    <div class="card"><h3>About the dataset</h3><div class="prose">
-      <p><b>Source:</b> Yeh, I. (2009). <i>Default of Credit Card Clients</i> [Dataset]. UCI Machine Learning Repository.
-        <a href="https://doi.org/10.24432/C55S3H">doi.org/10.24432/C55S3H</a>. Licensed CC BY 4.0.</p>
-      <p><b>What it is:</b> 30,000 real card holders of a bank in Taiwan. For each: credit limit, demographics, six monthly bills,
-        six monthly payments, six monthly repayment-status codes (April–September 2005), and whether they defaulted the following month.</p>
-      <p><b>Currency:</b> New Taiwan dollars (NT$). In 2005, US$1 was roughly NT$32.</p>
-      <p><b>Context:</b> Taiwan went through a well-known card debt crisis in 2005–2006, which helps explain the very high 22% default rate.
-        A typical US card portfolio defaults far less, so the patterns matter more than the levels.</p>
-    </div></div>
-    <div class="card"><h3>Limitations to keep in mind</h3><div class="prose">
-      <p><b>Six months only:</b> no long-term trends, seasonality or account age.</p>
-      <p><b>No purchase data:</b> no merchant categories, transactions or fraud. Banks don't publish these for privacy reasons.</p>
-      <p><b>Undocumented codes:</b> repayment status -2 and 0 aren't defined by the source. I used the most common interpretation (no balance and revolving).</p>
-      <p><b>"Inactive but defaulted":</b> 866 customers had no bills in all six months, yet 37% are marked as defaulting. That can't be explained from this data alone; in a real job I'd ask the data owner.</p>
-    </div></div>
-  </div>
-</section>
+  <!-- 5. DATA AND CLEANING -->
+  <section class="chapter" id="tab-quality" role="tabpanel">
+    <div class="finding"><p class="q">Can we trust this data, and what had to be fixed?</p>
+      <h2>The raw file had <strong>12 issues</strong>. Each one was counted, then fixed or flagged, before any analysis.</h2></div>
+    <div class="grid">
+      <div class="panel span-12"><h3>Issues found in the raw data</h3><div id="t-quality" style="overflow-x:auto"></div></div>
+      <div class="panel span-6"><h3>About the dataset</h3><div class="prose">
+        <p><b>Source:</b> Yeh, I. (2009). <i>Default of Credit Card Clients</i> [Dataset]. UCI Machine Learning Repository.
+          <a href="https://doi.org/10.24432/C55S3H">doi.org/10.24432/C55S3H</a>. Licensed CC BY 4.0.</p>
+        <p><b>What it is:</b> 30,000 real card holders of a bank in Taiwan. For each one: credit limit, demographics, six monthly bills,
+          six monthly payments and six repayment-status codes (April–September 2005), and whether they defaulted the following month.</p>
+        <p><b>Currency:</b> New Taiwan dollars (NT$). In 2005, US$1 was roughly NT$32.</p>
+        <p><b>Context:</b> the data comes from Taiwan's 2005–06 card-debt crisis, which explains the very high 22% default rate.
+          The patterns transfer to other portfolios; the levels don't.</p>
+      </div></div>
+      <div class="panel span-6"><h3>Limitations</h3><div class="prose">
+        <p><b>Six months only:</b> no long-term trends, seasonality or account age.</p>
+        <p><b>No purchase data:</b> no merchants, transactions or fraud. Banks don't publish these for privacy reasons.</p>
+        <p><b>Undocumented codes:</b> repayment status -2 and 0 aren't defined by the source, so I used the common interpretation: no balance, and revolving.</p>
+        <p><b>Inactive but defaulted:</b> 866 customers had no bills in six months, yet 37% are marked as defaulting. In a real job I'd raise this with the data owner.</p>
+      </div></div>
+    </div>
+  </section>
 
-<footer>
-  <b>Data:</b> UCI Machine Learning Repository, "Default of Credit Card Clients" (Yeh, 2009), real customers, CC BY 4.0.
-  <b>Tools:</b> SQL (DuckDB) · Python (Pandas, scikit-learn) · Plotly. Every number on this page comes from the code in
-  <a href="https://github.com/khushu-cs/credit-card-default-risk-analytics">the GitHub repository</a>.
-</footer>
+  <footer>Data: UCI Machine Learning Repository, <i>Default of Credit Card Clients</i> (Yeh, 2009), real customers, CC BY 4.0.
+    Built with SQL (DuckDB), Python (Pandas, scikit-learn) and Plotly. Every number on this page comes from the code in
+    <a href="https://github.com/khushu-cs/credit-card-default-risk-analytics">the GitHub repository</a>.</footer>
+</div></main>
 </div>
 
 <script>
 const D = __DATA__, dims = D.dims;
-const C = {blue:"#2a78d6", blueL:"#9ec5f4", orange:"#eb6834", aqua:"#1baf7a", ink:"#0b0b0b", ink2:"#52514e", line:"#e4e3df"};
-const SEQ = [[0,"#e8f1fc"],[0.25,"#9ec5f4"],[0.5,"#5598e7"],[0.75,"#256abf"],[1,"#0d366b"]];
+const C = {blue: "#2f6fdb", blueL: "#b3cbf3", ink: "#14233b", ink2: "#4b5a6e", ink3: "#7f8ba0", rule: "#e3e8ee",
+           r1: "#2e8b6e", r2: "#d9a441", r3: "#d9772e", r4: "#b8372b"};
+const RISK = [C.r1, C.r2, C.r3, C.r4];
+const HEAT = [[0, "#fbf3ef"], [0.25, "#f2c6b6"], [0.5, "#e2896c"], [0.75, "#c2462e"], [1, "#7a2116"]];
 const strip = s => s.replace(/^\d\. /, "");
 const fmt = {
-  pct: (v, d=1) => isFinite(v) ? (100*v).toFixed(d) + "%" : "–",
+  pct: (v, d = 1) => isFinite(v) ? (100 * v).toFixed(d) + "%" : "–",
   num: v => Math.round(v).toLocaleString(),
-  nt: v => { const a = Math.abs(v); return (v < 0 ? "-" : "") + "NT$" + (a >= 1e9 ? (a/1e9).toFixed(2) + "B" : a >= 1e6 ? (a/1e6).toFixed(0) + "M" : a >= 1e3 ? (a/1e3).toFixed(0) + "K" : Math.round(a)); },
+  nt: v => { const a = Math.abs(v); return (v < 0 ? "-" : "") + "NT$" + (a >= 1e9 ? (a / 1e9).toFixed(2) + "B" : a >= 1e6 ? (a / 1e6).toFixed(0) + "M" : a >= 1e3 ? (a / 1e3).toFixed(0) + "K" : Math.round(a)); },
 };
 const F = {L: "all", A: "all", E: "all", M: "all"};
 const N = D.cust.d.length;
@@ -239,181 +333,221 @@ function cubeRows(name) {
       (F.E === "all" || r[ix.E] === +F.E) && (F.M === "all" || r[ix.M] === +F.M))
     .map(r => Object.fromEntries(c.cols.map((n, i) => [n, r[i]])));
 }
-function rateBy(ids, keyArr, nKeys) {
+function rateBy(ids, key, nKeys) {
   const n = Array(nKeys).fill(0), d = Array(nKeys).fill(0);
-  for (const i of ids) { const k = keyArr(i); if (k == null) continue; n[k]++; d[k] += D.cust.d[i]; }
+  for (const i of ids) { const k = key(i); if (k == null) continue; n[k]++; d[k] += D.cust.d[i]; }
   return {n, d, r: n.map((x, k) => x ? d[k] / x : null)};
 }
 const sumIds = (ids, f) => ids.reduce((a, i) => a + f(i), 0);
+const rate = ids => sumIds(ids, i => D.cust.d[i]) / Math.max(ids.length, 1);
 
-// ---------- plotting ----------
-const LAYOUT = {margin: {l: 50, r: 18, t: 10, b: 40}, paper_bgcolor: "white", plot_bgcolor: "white",
-  font: {family: "Inter, Segoe UI, Helvetica, Arial, sans-serif", size: 12.5, color: C.ink},
-  hoverlabel: {bgcolor: "white", font: {size: 13}}, showlegend: false,
-  xaxis: {gridcolor: C.line, linecolor: C.line, zeroline: false, tickfont: {color: C.ink2}},
-  yaxis: {gridcolor: C.line, linecolor: C.line, zeroline: false, tickfont: {color: C.ink2}, automargin: true}};
+// ---------- rendering helpers ----------
+const LAYOUT = {margin: {l: 50, r: 20, t: 10, b: 40}, paper_bgcolor: "#fff", plot_bgcolor: "#fff",
+  font: {family: '"IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif', size: 13, color: C.ink},
+  hoverlabel: {bgcolor: "#fff", bordercolor: C.rule, font: {size: 13, color: C.ink}}, showlegend: false,
+  xaxis: {gridcolor: C.rule, linecolor: C.rule, zeroline: false, tickfont: {color: C.ink2}},
+  yaxis: {gridcolor: C.rule, linecolor: C.rule, zeroline: false, tickfont: {color: C.ink2}, automargin: true}};
 function plot(id, traces, layout = {}) {
   const L = structuredClone(LAYOUT);
   for (const [k, v] of Object.entries(layout)) L[k] = (typeof v === "object" && !Array.isArray(v) && L[k]) ? {...L[k], ...v} : v;
   Plotly.react(id, traces, L, {displayModeBar: false, responsive: true});
 }
-function kpis(id, items) {
+function ledger(id, items) {
   document.getElementById(id).innerHTML = items.map(([l, v, s]) =>
-    `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s || ""}</div></div>`).join("");
+    `<div><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s || ""}</div></div>`).join("");
 }
-function rateBars(id, labels, res, color, avg, opts = {}) {
+const head = (id, html) => { document.getElementById(id).innerHTML = html; };
+function rateBars(id, labels, res, opts = {}) {
   const keep = labels.map((_, k) => res.n[k] > 0);
   const lab = labels.filter((_, k) => keep[k]), rr = res.r.filter((_, k) => keep[k]), nn = res.n.filter((_, k) => keep[k]);
-  const traces = [{type: "bar", orientation: "h", y: lab, x: rr, marker: {color}, text: rr.map(v => fmt.pct(v)), textposition: "outside",
-    cliponaxis: false, customdata: nn, hovertemplate: "<b>%{y}</b><br>Default rate %{x:.1%}<br>%{customdata:,} customers<extra></extra>"}];
-  const shapes = avg != null ? [{type: "line", x0: avg, x1: avg, y0: -0.5, y1: lab.length - 0.5, line: {color: C.ink2, dash: "dash", width: 1}}] : [];
-  plot(id, traces, {xaxis: {tickformat: ".0%", range: [0, Math.max(...rr.filter(v => v != null), 0.05) * 1.25]},
-    yaxis: {autorange: "reversed"}, margin: {l: opts.l || 130}, shapes,
-    annotations: avg != null ? [{x: avg, y: lab.length - 0.5, yref: "y", yanchor: "top", text: "avg " + fmt.pct(avg, 0), showarrow: false, yshift: -2, xshift: 18, font: {size: 10.5, color: C.ink2}}] : []});
+  const avg = opts.avg;
+  const color = rr.map(v => v == null ? C.blueL : v >= 0.5 ? C.r4 : v >= 0.25 ? C.r3 : v >= 0.1 ? C.r2 : C.r1);
+  plot(id, [{type: "bar", orientation: "h", y: lab, x: rr, marker: {color: opts.color || color}, text: rr.map(v => fmt.pct(v)), textposition: "outside",
+    cliponaxis: false, customdata: nn, hovertemplate: "<b>%{y}</b><br>Default rate %{x:.1%}<br>%{customdata:,} customers<extra></extra>"}],
+    {xaxis: {tickformat: ".0%", range: [0, Math.max(...rr.filter(v => v != null), 0.05) * 1.25]}, yaxis: {autorange: "reversed"},
+     margin: {l: opts.l || 120, t: avg != null ? 22 : 10}, bargap: 0.35,
+     shapes: avg != null ? [{type: "line", x0: avg, x1: avg, yref: "paper", y0: 0, y1: 1, line: {color: C.ink, dash: "dot", width: 1}}] : [],
+     annotations: avg != null ? [{x: avg, yref: "paper", y: 1, yanchor: "bottom", text: "average " + fmt.pct(avg, 0), showarrow: false, font: {size: 11.5, color: C.ink2}}] : []});
 }
 
-// ---------- filters & tabs ----------
+// ---------- filters & chapters ----------
 function fill(id, label, vals) {
   document.getElementById(id).innerHTML = `<option value="all">All ${label}</option>` + vals.map((v, i) => `<option value="${i}">${strip(v)}</option>`).join("");
 }
-fill("f-L", "limits", dims.limit); fill("f-A", "ages", dims.age); fill("f-E", "education", dims.edu); fill("f-M", "statuses", dims.mar);
+fill("f-L", "limits", dims.limit); fill("f-A", "ages", dims.age); fill("f-E", "levels", dims.edu); fill("f-M", "statuses", dims.mar);
 for (const k of ["L", "A", "E", "M"]) document.getElementById("f-" + k).onchange = e => { F[k] = e.target.value; render(); };
 document.getElementById("reset").onclick = () => { for (const k of ["L", "A", "E", "M"]) { F[k] = "all"; document.getElementById("f-" + k).value = "all"; } render(); };
 let current = "overview";
-document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => {
-  document.querySelectorAll("nav.tabs button").forEach(x => x.classList.toggle("on", x === b));
-  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === "tab-" + b.dataset.tab));
-  current = b.dataset.tab; render();
-});
+function openChapter(name) {
+  document.querySelectorAll(".chapters button").forEach(x => x.setAttribute("aria-selected", x.dataset.tab === name));
+  document.querySelectorAll(".chapter").forEach(t => t.classList.toggle("on", t.id === "tab-" + name));
+  current = name; render(); window.scrollTo({top: 0});
+}
+document.querySelectorAll(".chapters button").forEach(b => b.onclick = () => openChapter(b.dataset.tab));
 
-// ---------- OVERVIEW ----------
+// ---------- 1. portfolio ----------
+function renderLadder(ids) {
+  const nT = [0, 0, 0, 0], dT = [0, 0, 0, 0];
+  for (const i of ids) { nT[D.cust.t[i]]++; dT[D.cust.t[i]] += D.cust.d[i]; }
+  const tn = nT.reduce((a, b) => a + b, 0), td = dT.reduce((a, b) => a + b, 0);
+  const seg = (vals, tot) => vals.map((v, k) => {
+    const p = tot ? v / tot : 0;
+    return `<div class="seg t${k + 1}" data-w="${(100 * p).toFixed(2)}" title="${strip(dims.tier[k])}: ${fmt.pct(p)}">${p >= 0.06 ? fmt.pct(p, 0) : ""}</div>`;
+  }).join("");
+  document.getElementById("lad-cust").innerHTML = seg(nT, tn);
+  document.getElementById("lad-def").innerHTML = seg(dT, td);
+  document.getElementById("lad-key").innerHTML = dims.tier.map((t, k) =>
+    `<span><i style="background:${RISK[k]}"></i>${strip(t)} · ${["under 10%", "10–25%", "25–50%", "50% or more"][k]} predicted</span>`).join("");
+  requestAnimationFrame(() => document.querySelectorAll(".seg").forEach(s => s.style.width = s.dataset.w + "%"));
+  return {nT, dT, tn, td};
+}
 function renderOverview(ids) {
   const lim = sumIds(ids, i => D.cust.lim[i] * 1000), bal = sumIds(ids, i => D.cust.bal[i]);
-  const def = sumIds(ids, i => D.cust.d[i]), defBal = sumIds(ids, i => D.cust.d[i] ? D.cust.bal[i] : 0);
-  kpis("k-overview", [
-    ["Customers", fmt.num(ids.length), `avg credit limit ${fmt.nt(lim / Math.max(ids.length, 1))}`],
-    ["Total credit lines", fmt.nt(lim), `${fmt.nt(bal)} owed in September`],
-    ["Utilization (September)", fmt.pct(bal / Math.max(lim, 1), 0), "balance ÷ credit limit"],
-    ["Default rate", fmt.pct(def / Math.max(ids.length, 1)), `${fmt.pct(defBal / Math.max(bal, 1), 0)} of balances owed by defaulters`],
+  const defBal = sumIds(ids, i => D.cust.d[i] ? D.cust.bal[i] : 0);
+  const L = renderLadder(ids);
+  const hiC = (L.nT[2] + L.nT[3]) / Math.max(L.tn, 1), hiD = (L.dT[2] + L.dT[3]) / Math.max(L.td, 1);
+  head("h-overview", ids.length
+    ? `<strong>${fmt.pct(rate(ids), 0)}</strong> of these customers defaulted. The riskiest <strong>${fmt.pct(hiC, 0)}</strong> of customers account for <strong>${fmt.pct(hiD, 0)}</strong> of all defaulters.`
+    : "No customers match these filters. Clear a filter to see results.");
+  ledger("k-overview", [
+    ["Customers", fmt.num(ids.length), `average credit limit ${fmt.nt(lim / Math.max(ids.length, 1))}`],
+    ["Credit lines", fmt.nt(lim), `${fmt.nt(bal)} owed in September`],
+    ["Utilization", fmt.pct(bal / Math.max(lim, 1), 0), "balance ÷ credit limit, September"],
+    ["Default rate", fmt.pct(rate(ids)), `${fmt.pct(defBal / Math.max(bal, 1), 0)} of balances owed by defaulters`],
   ]);
   const m = cubeRows("monthly"), by = Array.from({length: 6}, () => ({bal: 0, lim: 0}));
   for (const r of m) { by[r.mo].bal += r.bal; by[r.mo].lim += r.lim; }
-  plot("c-trend", [
-    {type: "bar", x: dims.months, y: by.map(b => b.bal), marker: {color: C.blueL}, name: "Balances", yaxis: "y",
-     text: by.map(b => fmt.nt(b.bal)), textposition: "outside", cliponaxis: false, hovertemplate: "%{x}: %{y:,.0f} NT$ owed<extra></extra>"},
-  ], {yaxis: {tickvals: [0, 5e8, 1e9, 1.5e9, 2e9], ticktext: ["0", "NT$0.5B", "NT$1.0B", "NT$1.5B", "NT$2.0B"], range: [0, Math.max(...by.map(b => b.bal)) * 1.2]},
-      margin: {t: 24},
-      annotations: by.map((b, k) => ({x: dims.months[k], y: 0, yanchor: "bottom", yshift: 8, text: `<b>${fmt.pct(b.bal / Math.max(b.lim, 1), 0)}</b><br>utilized`,
-        showarrow: false, font: {size: 11, color: C.ink}}))});
-  rateBars("c-limit", dims.limit.map(strip), rateBy(ids, i => D.cust.L[i], 5), C.blue, def / Math.max(ids.length, 1), {l: 90});
+  const top = Math.max(...by.map(b => b.bal), 1);
+  plot("c-trend", [{type: "bar", x: dims.months, y: by.map(b => b.bal), marker: {color: by.map((_, k) => k === 5 ? C.ink : "#8ea3bf")},
+    text: by.map(b => fmt.nt(b.bal)), textposition: "outside", cliponaxis: false, hovertemplate: "%{x} 2005: %{text} owed<extra></extra>"}],
+    {yaxis: {showticklabels: false, gridcolor: "rgba(0,0,0,0)", range: [0, top * 1.18]}, bargap: 0.3, margin: {l: 10, t: 24},
+     annotations: by.map((b, k) => ({x: dims.months[k], y: 0, yanchor: "bottom", yshift: 8, text: fmt.pct(b.bal / Math.max(b.lim, 1), 0),
+       showarrow: false, font: {size: 12.5, color: "#fff"}}))});
+  rateBars("c-limit", dims.limit.map(s => strip(s).replace("<=", "≤ ")), rateBy(ids, i => D.cust.L[i], 5), {avg: rate(ids), l: 90});
   const segs = [0, 1, 2, 3];
   const nn = segs.map(k => ids.filter(i => D.cust.pb[i] === k).length);
   const db = segs.map(k => sumIds(ids.filter(i => D.cust.pb[i] === k), i => D.cust.d[i] ? D.cust.bal[i] : 0));
-  const tn = nn.reduce((a, b) => a + b, 0), tdb = db.reduce((a, b) => a + b, 0);
-  const lab = segs.map(k => strip(dims.beh[k]).replace(" on ", "<br>on "));
+  const tn = Math.max(nn.reduce((a, b) => a + b, 0), 1), tdb = Math.max(db.reduce((a, b) => a + b, 0), 1);
+  const lab = segs.map(k => strip(dims.beh[k]));
   plot("c-beh", [
-    {type: "bar", x: lab, y: nn.map(v => v / Math.max(tn, 1)), name: "% of customers", marker: {color: C.blueL}, hovertemplate: "%{x}<br>%{y:.0%} of customers<extra></extra>"},
-    {type: "bar", x: lab, y: db.map(v => v / Math.max(tdb, 1)), name: "% of defaulted balances", marker: {color: C.orange},
-     text: db.map(v => fmt.pct(v / Math.max(tdb, 1), 0)), textposition: "outside", cliponaxis: false, hovertemplate: "%{x}<br>%{y:.0%} of defaulted balances<extra></extra>"},
-  ], {barmode: "group", bargap: 0.25, yaxis: {tickformat: ".0%"}, showlegend: true, legend: {orientation: "h", x: 0, y: 1.14}, xaxis: {tickangle: 0}, margin: {b: 50}});
+    {type: "bar", orientation: "h", y: lab, x: nn.map(v => v / tn), name: "Share of customers", marker: {color: "#c4d0df"},
+     text: nn.map(v => fmt.pct(v / tn, 0)), textposition: "outside", cliponaxis: false, hovertemplate: "%{y}: %{x:.0%} of customers<extra></extra>"},
+    {type: "bar", orientation: "h", y: lab, x: db.map(v => v / tdb), name: "Share of defaulted balances", marker: {color: C.r4},
+     text: db.map(v => fmt.pct(v / tdb, 0)), textposition: "outside", cliponaxis: false, hovertemplate: "%{y}: %{x:.0%} of defaulted balances<extra></extra>"},
+  ], {barmode: "group", bargap: 0.3, bargroupgap: 0.08, xaxis: {tickformat: ".0%", range: [0, 0.8]}, yaxis: {autorange: "reversed"},
+      showlegend: true, legend: {orientation: "h", x: 0, y: 1.16}, margin: {l: 150, t: 30}});
 }
 
-// ---------- WHO DEFAULTS ----------
+// ---------- 2. who defaults ----------
 function renderWho(ids) {
-  const avg = sumIds(ids, i => D.cust.d[i]) / Math.max(ids.length, 1);
+  const avg = rate(ids);
   const L = rateBy(ids, i => D.cust.L[i], 5), A = rateBy(ids, i => D.cust.A[i], 5);
-  const hi = L.r.map((r, k) => [r, k]).filter(x => x[0] != null).sort((a, b) => b[0] - a[0])[0];
-  const lo = L.r.map((r, k) => [r, k]).filter(x => x[0] != null).sort((a, b) => a[0] - b[0])[0];
-  const ar = A.r.filter(v => v != null);
-  kpis("k-who", [
-    ["Default rate (filtered)", fmt.pct(avg), `${fmt.num(ids.length)} customers`],
-    ["Riskiest credit-limit band", hi ? fmt.pct(hi[0]) : "–", hi ? `limit ${strip(dims.limit[hi[1]])}` : ""],
-    ["Safest credit-limit band", lo ? fmt.pct(lo[0]) : "–", lo ? `limit ${strip(dims.limit[lo[1]])}` : ""],
-    ["Spread across age groups", ar.length > 1 ? ((Math.max(...ar) - Math.min(...ar)) * 100).toFixed(1) + " pts" : "–", "highest minus lowest age-group rate"],
+  const valid = L.r.map((r, k) => [r, k]).filter(x => x[0] != null && L.n[x[1]] >= 20);
+  const hi = [...valid].sort((a, b) => b[0] - a[0])[0], lo = [...valid].sort((a, b) => a[0] - b[0])[0];
+  const ar = A.r.filter((v, k) => v != null && A.n[k] >= 20);
+  const spread = ar.length > 1 ? Math.max(...ar) - Math.min(...ar) : NaN;
+  head("h-who", hi && lo && hi[1] !== lo[1]
+    ? `Credit-line size matters most: <strong>${fmt.pct(hi[0], 0)}</strong> default on lines of ${strip(dims.limit[hi[1]]).replace("<=", "≤ ")}, against <strong>${fmt.pct(lo[0], 0)}</strong> on lines of ${strip(dims.limit[lo[1]])}.`
+    : `Within this group, <strong>${fmt.pct(avg, 0)}</strong> of customers defaulted.`);
+  ledger("k-who", [
+    ["Default rate", fmt.pct(avg), `${fmt.num(ids.length)} customers`],
+    ["Riskiest credit-limit band", hi ? fmt.pct(hi[0]) : "–", hi ? `limit ${strip(dims.limit[hi[1]]).replace("<=", "≤ ")}` : ""],
+    ["Safest credit-limit band", lo ? fmt.pct(lo[0]) : "–", lo ? `limit ${strip(dims.limit[lo[1]]).replace("<=", "≤ ")}` : ""],
+    ["Gap between age groups", isFinite(spread) ? (100 * spread).toFixed(1) + " pts" : "–", "highest minus lowest default rate"],
   ]);
-  rateBars("c-age", dims.age.map(strip), A, C.blue, avg, {l: 70});
-  rateBars("c-edu", dims.edu, rateBy(ids, i => D.cust.E[i], 5), C.blue, avg, {l: 120});
+  rateBars("c-age", dims.age.map(strip), A, {avg, l: 70});
+  rateBars("c-edu", dims.edu, rateBy(ids, i => D.cust.E[i], 5), {avg, l: 120});
   const z = [], txt = [], cnt = [];
   for (let l = 0; l < 5; l++) {
     const row = [], t = [], n = [];
     for (let u = 0; u < 4; u++) {
       const s = ids.filter(i => D.cust.L[i] === l && D.cust.ub[i] === u), k = s.length, d = sumIds(s, i => D.cust.d[i]);
-      row.push(k >= 20 ? d / k : null); t.push(k >= 20 ? fmt.pct(d / k, 0) : (k ? "n<20" : "")); n.push(k);
+      row.push(k >= 20 ? d / k : null); t.push(k >= 20 ? fmt.pct(d / k, 0) : ""); n.push(k);
     }
     z.push(row); txt.push(t); cnt.push(n);
   }
-  plot("c-heat", [{type: "heatmap", z, x: dims.util.map(strip), y: dims.limit.map(strip), colorscale: SEQ, text: txt, texttemplate: "%{text}",
-    customdata: cnt, hovertemplate: "Limit %{y}, utilization %{x}<br>Default rate %{z:.1%}<br>%{customdata:,} customers<extra></extra>",
-    colorbar: {tickformat: ".0%", thickness: 10}}],
-    {xaxis: {title: {text: "Utilization in September", font: {size: 11.5, color: C.ink2}}}, yaxis: {autorange: "reversed", title: {text: "Credit limit (NT$)", font: {size: 11.5, color: C.ink2}}}, margin: {l: 110}});
+  plot("c-heat", [{type: "heatmap", z, x: dims.util.map(s => strip(s) + " utilized"), y: dims.limit.map(s => strip(s).replace("<=", "≤ ")), colorscale: HEAT,
+    zmin: 0.05, zmax: 0.4, xgap: 3, ygap: 3, text: txt, texttemplate: "%{text}", textfont: {size: 14},
+    customdata: cnt, hovertemplate: "Limit %{y}, %{x}<br>Default rate %{z:.1%}<br>%{customdata:,} customers<extra></extra>",
+    colorbar: {tickformat: ".0%", thickness: 10, outlinewidth: 0}}],
+    {xaxis: {side: "top", showgrid: false, linecolor: "rgba(0,0,0,0)"}, yaxis: {autorange: "reversed", showgrid: false, title: {text: "Credit limit (NT$)", font: {size: 12, color: C.ink2}}},
+     margin: {l: 110, t: 34}});
 }
 
-// ---------- EARLY WARNING ----------
+// ---------- 3. warning signs ----------
 function renderWarning(ids) {
   const stIdx = i => { const s = D.cust.st[i]; return s === -2 ? 0 : s === -1 ? 1 : s === 0 ? 2 : s === 1 ? 3 : s === 2 ? 4 : 5; };
   const st = rateBy(ids, stIdx, 6);
   const late = ids.filter(i => D.cust.st[i] >= 1), ok = ids.filter(i => D.cust.st[i] < 1);
   const roll = cubeRows("roll");
   const from12 = roll.filter(r => r.fr === 3), cure = from12.filter(r => r.tt <= 2).reduce((a, r) => a + r.n, 0) / Math.max(from12.reduce((a, r) => a + r.n, 0), 1);
-  kpis("k-warning", [
-    ["Late on payment in September", fmt.pct(late.length / Math.max(ids.length, 1)), `${fmt.num(late.length)} customers`],
-    ["Default rate if late", fmt.pct(sumIds(late, i => D.cust.d[i]) / Math.max(late.length, 1)), "late in September"],
-    ["Default rate if not late", fmt.pct(sumIds(ok, i => D.cust.d[i]) / Math.max(ok.length, 1)), "paid, revolving or no balance"],
-    ["Late accounts that catch up", fmt.pct(cure, 0), "1–2 months late → back to current next month"],
+  head("h-warning", ok.length && late.length
+    ? `Missing a payment is the clearest warning: default jumps from <strong>${fmt.pct(rate(ok), 0)}</strong> for customers on time to <strong>${fmt.pct(rate(late), 0)}</strong> for those already late.`
+    : "Not enough customers in this group to compare on-time and late payers.");
+  ledger("k-warning", [
+    ["Late in September", fmt.pct(late.length / Math.max(ids.length, 1)), `${fmt.num(late.length)} customers`],
+    ["Default rate if late", fmt.pct(rate(late)), "late in September"],
+    ["Default rate if on time", fmt.pct(rate(ok)), "paid, revolving or no balance"],
+    ["Late accounts that catch up", fmt.pct(cure, 0), "1–2 months late, back to current next month"],
   ]);
-  rateBars("c-status", ["No balance", "Paid in full", "Revolving", "1 month late", "2 months late", "3+ months late"], st, C.orange, null, {l: 110});
-  rateBars("c-late", ["0 months", "1 month", "2 months", "3 months", "4 months", "5 months", "6 months"], rateBy(ids, i => D.cust.lc[i], 7), C.orange, null, {l: 80});
+  rateBars("c-status", ["No balance", "Paid in full", "Revolving", "1 month late", "2 months late", "3+ months late"], st, {l: 110});
+  rateBars("c-late", ["None", "1 month", "2 months", "3 months", "4 months", "5 months", "All 6 months"], rateBy(ids, i => D.cust.lc[i], 7), {l: 90});
   const M = Array.from({length: 5}, () => Array(5).fill(0));
   for (const r of roll) M[r.fr][r.tt] += r.n;
   const z = M.map(row => { const s = row.reduce((a, b) => a + b, 0); return row.map(v => s ? v / s : null); });
-  plot("c-roll", [{type: "heatmap", z, x: dims.status.map(strip), y: dims.status.map(strip), colorscale: SEQ, zmin: 0, zmax: 1,
-    text: z.map(r => r.map(v => v == null ? "" : Math.round(100 * v) + "%")), texttemplate: "%{text}",
-    customdata: M, hovertemplate: "From <b>%{y}</b> to <b>%{x}</b><br>%{z:.1%} (%{customdata:,} account-months)<extra></extra>",
-    colorbar: {tickformat: ".0%", thickness: 10}}],
-    {yaxis: {autorange: "reversed", title: {text: "This month", font: {size: 11, color: C.ink2}}}, xaxis: {tickangle: -25, title: {text: "Next month", font: {size: 11, color: C.ink2}}}, margin: {l: 120, b: 80}});
+  const names = dims.status.map(strip);
+  plot("c-roll", [{type: "heatmap", z, x: names, y: names, colorscale: [[0, "#f4f6f9"], [0.3, "#b9c6d8"], [0.65, "#5f7ba3"], [1, "#14233b"]], zmin: 0, zmax: 1,
+    xgap: 3, ygap: 3, text: z.map(r => r.map(v => v == null ? "" : Math.round(100 * v) + "%")), texttemplate: "%{text}", textfont: {size: 13},
+    customdata: M, hovertemplate: "From <b>%{y}</b> to <b>%{x}</b><br>%{z:.1%} of %{customdata:,} account-months<extra></extra>", showscale: false}],
+    {xaxis: {side: "top", tickangle: 0, showgrid: false, tickfont: {size: 11.5}}, yaxis: {autorange: "reversed", showgrid: false}, margin: {l: 120, t: 40}});
   const m = cubeRows("monthly"), by = Array.from({length: 6}, () => ({n: 0, late2: 0}));
   for (const r of m) { by[r.mo].n += r.n; by[r.mo].late2 += r.late2; }
-  plot("c-late2", [{type: "scatter", mode: "lines+markers+text", x: dims.months, y: by.map(b => b.late2 / Math.max(b.n, 1)),
-    line: {color: C.orange, width: 2}, marker: {size: 8}, text: by.map(b => fmt.pct(b.late2 / Math.max(b.n, 1))), textposition: "top center",
-    hovertemplate: "%{x}: %{y:.1%} of accounts 2+ months late<extra></extra>"}], {yaxis: {tickformat: ".0%", rangemode: "tozero"}, margin: {t: 20}});
+  const ys = by.map(b => b.late2 / Math.max(b.n, 1));
+  plot("c-late2", [{type: "scatter", mode: "lines+markers+text", x: dims.months, y: ys, line: {color: C.r4, width: 2.5}, marker: {size: 9, color: C.r4},
+    text: ys.map(v => fmt.pct(v)), textposition: "top center", cliponaxis: false, hovertemplate: "%{x} 2005: %{y:.1%} two or more months late<extra></extra>"}],
+    {yaxis: {tickformat: ".0%", rangemode: "tozero", range: [0, Math.max(...ys, 0.01) * 1.3]}, margin: {t: 24}});
 }
 
-// ---------- RISK MODEL ----------
+// ---------- 4. risk score ----------
 function renderModel(ids) {
   const te = ids.filter(i => D.cust.te[i] === 1).sort((a, b) => D.cust.pd[b] - D.cust.pd[a]);
   const totD = sumIds(te, i => D.cust.d[i]);
-  const top = te.slice(0, Math.round(te.length * 0.2)), topD = sumIds(top, i => D.cust.d[i]);
+  const topD = sumIds(te.slice(0, Math.round(te.length * 0.2)), i => D.cust.d[i]);
   const vh = ids.filter(i => D.cust.t[i] === 3);
-  kpis("k-model", [
-    ["Model accuracy (AUC)", D.metrics["AUC (5-fold CV mean)"].toFixed(2), `cross-validated · test set ${D.metrics["AUC (test set)"].toFixed(2)} · 0.5 = random`],
+  head("h-model", te.length >= 50
+    ? `Reviewing the riskiest <strong>20%</strong> of customers finds <strong>${fmt.pct(topD / Math.max(totD, 1), 0)}</strong> of everyone who defaulted.`
+    : "Too few test customers in this group to judge the score. Try clearing a filter.");
+  ledger("k-model", [
+    ["Accuracy (AUC)", D.metrics["AUC (5-fold CV mean)"].toFixed(2), `cross-validated; 0.5 would be guessing`],
     ["Defaulters in riskiest 20%", fmt.pct(topD / Math.max(totD, 1), 0), "random targeting would find 20%"],
-    ["Very high risk customers", fmt.num(vh.length), `actual default rate ${fmt.pct(sumIds(vh, i => D.cust.d[i]) / Math.max(vh.length, 1), 0)}`],
-    ["Predicted vs actual", fmt.pct(sumIds(ids, i => D.cust.pd[i]) / 1000 / Math.max(ids.length, 1)) + " vs " + fmt.pct(sumIds(ids, i => D.cust.d[i]) / Math.max(ids.length, 1)),
-     "average predicted vs actual default rate"],
+    ["Very high risk customers", fmt.num(vh.length), `${fmt.pct(rate(vh), 0)} of them defaulted`],
+    ["Predicted vs actual", fmt.pct(sumIds(ids, i => D.cust.pd[i]) / 1000 / Math.max(ids.length, 1)) + " / " + fmt.pct(rate(ids)), "average default rate"],
   ]);
   const xs = [0], ys = [0];
   for (let k = 1; k <= 10; k++) { const n = Math.round(te.length * k / 10); xs.push(k / 10); ys.push(sumIds(te.slice(0, n), i => D.cust.d[i]) / Math.max(totD, 1)); }
   plot("c-gains", [
-    {type: "scatter", mode: "lines+markers", x: xs, y: ys, line: {color: C.blue, width: 2}, marker: {size: 7}, name: "Risk score",
-     hovertemplate: "Review riskiest %{x:.0%}<br>→ find %{y:.0%} of defaulters<extra></extra>"},
-    {type: "scatter", mode: "lines", x: [0, 1], y: [0, 1], line: {color: C.ink2, dash: "dash", width: 1}, name: "Random", hoverinfo: "skip"},
-  ], {xaxis: {tickformat: ".0%", title: {text: "Customers reviewed (riskiest first)", font: {size: 11, color: C.ink2}}},
-      yaxis: {tickformat: ".0%", title: {text: "Defaulters found", font: {size: 11, color: C.ink2}}}, showlegend: true, legend: {x: 0.6, y: 0.1}});
+    {type: "scatter", mode: "lines", x: [0, 1], y: [0, 1], line: {color: C.ink3, dash: "dot", width: 1}, hoverinfo: "skip", name: "Random"},
+    {type: "scatter", mode: "lines+markers", x: xs, y: ys, line: {color: C.ink, width: 2.5}, marker: {size: 7, color: xs.map(x => x <= 0.2 && x > 0 ? C.r4 : C.ink)},
+     fill: "tonexty", fillcolor: "rgba(47,111,219,0.08)", name: "Risk score", hovertemplate: "Review the riskiest %{x:.0%}<br>and find %{y:.0%} of defaulters<extra></extra>"},
+  ], {xaxis: {tickformat: ".0%", title: {text: "Customers reviewed, riskiest first", font: {size: 12, color: C.ink2}}},
+      yaxis: {tickformat: ".0%", title: {text: "Defaulters found", font: {size: 12, color: C.ink2}}}, showlegend: true, legend: {x: 0.62, y: 0.12}});
   const f = [...D.factors].sort((a, b) => a.coefficient - b.coefficient);
   plot("c-factors", [{type: "bar", orientation: "h", y: f.map(x => x.factor), x: f.map(x => x.odds_multiplier - 1), base: 1,
-    marker: {color: f.map(x => x.coefficient > 0 ? C.orange : C.blue)}, text: f.map(x => "×" + x.odds_multiplier.toFixed(2)), textposition: "outside", cliponaxis: false,
-    hovertemplate: "<b>%{y}</b><br>odds ×%{text}<extra></extra>"}], {xaxis: {range: [0.55, 1.7], title: {text: "Odds multiplier", font: {size: 11, color: C.ink2}}}, margin: {l: 250}});
+    marker: {color: f.map(x => x.coefficient > 0 ? C.r4 : C.r1)}, text: f.map(x => "×" + x.odds_multiplier.toFixed(2)), textposition: "outside", cliponaxis: false,
+    hovertemplate: "<b>%{y}</b><br>odds %{text}<extra></extra>"}],
+    {xaxis: {range: [0.55, 1.75], title: {text: "Odds multiplier (1 = no effect)", font: {size: 12, color: C.ink2}}}, margin: {l: 250}, bargap: 0.35,
+     shapes: [{type: "line", x0: 1, x1: 1, yref: "paper", y0: 0, y1: 1, line: {color: C.ink, width: 1}}]});
   renderSim();
+  const acts = ["Credit-line increases and retention offers", "Monitor; payment reminders before the due date", "Freeze increases; outreach and payment plans", "Reduce available credit; early collections contact"];
+  const totAll = Math.max(sumIds(ids, i => D.cust.d[i]), 1);
   const rows = dims.tier.map((t, k) => {
     const s = ids.filter(i => D.cust.t[i] === k), d = sumIds(s, i => D.cust.d[i]);
-    return [strip(t), fmt.num(s.length), fmt.pct(s.length / Math.max(ids.length, 1), 0), fmt.pct(sumIds(s, i => D.cust.pd[i]) / 1000 / Math.max(s.length, 1)),
-      fmt.pct(d / Math.max(s.length, 1)), fmt.pct(d / Math.max(sumIds(ids, i => D.cust.d[i]), 1), 0),
-      ["Credit-line increases, retention offers", "Monitor; payment reminders", "Freeze increases; outreach & payment plans", "Reduce available credit; early collections"][k]];
-  });
-  document.getElementById("t-tiers").innerHTML = `<table class="tbl"><thead><tr><th>Tier</th><th>Customers</th><th>% of customers</th><th>Predicted default</th>
-    <th>Actual default</th><th>% of all defaulters</th><th>Suggested action</th></tr></thead><tbody>
-    ${rows.map(r => `<tr>${r.map((c, j) => `<td class="${j > 0 && j < 6 ? "n" : ""}">${c}</td>`).join("")}</tr>`).join("")}</tbody></table>
-    <p class="note" style="margin-top:8px">Tiers by predicted chance of default: Low &lt;10%, Medium 10–25%, High 25–50%, Very high 50%+.</p>`;
+    return `<tr><td><span class="tier"><i style="background:${RISK[k]}"></i>${strip(t)}</span></td><td class="n">${fmt.num(s.length)}</td>
+      <td class="n">${fmt.pct(s.length / Math.max(ids.length, 1), 0)}</td><td class="n">${fmt.pct(sumIds(s, i => D.cust.pd[i]) / 1000 / Math.max(s.length, 1))}</td>
+      <td class="n">${fmt.pct(d / Math.max(s.length, 1))}</td><td class="n">${fmt.pct(d / totAll, 0)}</td><td>${acts[k]}</td></tr>`;
+  }).join("");
+  document.getElementById("t-tiers").innerHTML = `<table class="tbl"><thead><tr><th>Tier</th><th class="n">Customers</th><th class="n">Share</th>
+    <th class="n">Predicted default</th><th class="n">Actual default</th><th class="n">Share of defaulters</th><th>Suggested action</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 let CUT = 30;
 const cutEl = document.getElementById("cut");
@@ -434,32 +568,33 @@ function renderSim() {
   document.getElementById("r-false-bar").style.width = 100 * falseR + "%";
   document.getElementById("r-prec").textContent = flag.length ? fmt.pct(prec, 0) : "–";
   let v;
-  if (!flag.length) v = "No customers are above this cutoff. Try a lower one.";
+  if (!flag.length) v = "No customers are at or above this cutoff. Lower it to flag some.";
   else {
-    v = `Flagging customers at <b>${CUT}%+</b> catches <b>${fmt.pct(caught, 0)}</b> of defaulters, and <b>${fmt.pct(prec, 0)}</b> of flagged customers really default. `;
-    v += `It also wrongly flags <b>${fmt.pct(falseR, 0)}</b> of good customers. `;
-    v += falseR > 0.3 ? "⚠️ <b>Too broad</b> for actions that hurt the customer (like cutting their limit), but fine for gentle ones like reminders."
-      : caught < 0.3 ? "🔎 <b>Very selective:</b> good for strong actions (credit-line cuts), but most defaulters slip through."
-      : "👍 <b>Balanced:</b> a reasonable cutoff for proactive outreach.";
+    v = `At <b>${CUT}%</b>, the bank would catch <b>${fmt.pct(caught, 0)}</b> of defaulters, and <b>${fmt.pct(prec, 0)}</b> of the customers it flags would really default. `;
+    v += `It would also wrongly flag <b>${fmt.pct(falseR, 0)}</b> of good customers. `;
+    v += falseR > 0.3 ? "That's too broad for actions that hurt customers, like cutting a limit, but fine for gentle ones like reminders."
+      : caught < 0.3 ? "That's very selective: suited to strong actions such as credit-line cuts, but most defaulters slip through."
+      : "That's a balanced cutoff for proactive outreach.";
   }
   document.getElementById("r-verdict").innerHTML = v;
 }
 
-// ---------- DATA QUALITY ----------
+// ---------- 5. data and cleaning ----------
 function renderQuality() {
-  document.getElementById("t-quality").innerHTML = `<table class="tbl"><thead><tr><th>Issue found</th><th style="text-align:right">Rows affected</th><th>What I did</th></tr></thead><tbody>
+  document.getElementById("t-quality").innerHTML = `<table class="tbl"><thead><tr><th>Issue found</th><th class="n">Rows affected</th><th>What I did</th></tr></thead><tbody>
     ${D.quality.map(q => `<tr><td>${q.issue}</td><td class="n">${(+q.rows_affected).toLocaleString()}</td><td>${q.action}</td></tr>`).join("")}</tbody></table>`;
 }
 
 // ---------- render ----------
 function render() {
   const parts = [];
-  if (F.L !== "all") parts.push("limit " + strip(dims.limit[+F.L]));
+  if (F.L !== "all") parts.push("credit limit " + strip(dims.limit[+F.L]));
   if (F.A !== "all") parts.push("age " + strip(dims.age[+F.A]));
-  if (F.E !== "all") parts.push(dims.edu[+F.E]);
-  if (F.M !== "all") parts.push(dims.mar[+F.M]);
-  document.getElementById("active-filters").textContent = parts.length ? "Showing: " + parts.join(" · ") : "Showing: all 30,000 customers";
+  if (F.E !== "all") parts.push(dims.edu[+F.E].toLowerCase());
+  if (F.M !== "all") parts.push(dims.mar[+F.M].toLowerCase());
   const ids = custIdx();
+  document.getElementById("active-filters").textContent = parts.length ? `Showing ${fmt.num(ids.length)} customers: ${parts.join(", ")}` : "Showing all 30,000 customers";
+  document.getElementById("reset").disabled = !parts.length;
   ({overview: renderOverview, who: renderWho, warning: renderWarning, model: renderModel, quality: renderQuality})[current](ids);
 }
 render();
